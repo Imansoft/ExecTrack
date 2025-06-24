@@ -1,0 +1,91 @@
+✅ PHASE 1: Setup + Layout
+🟦 Prompt 1: Basic Mobile-Responsive Layout
+Claude, help me create a clean, mobile-responsive productivity website using HTML and TailwindCSS.
+It should have a:
+Top navbar with logo and navigation links: “Dashboard”, “Planner”, “To Do”
+Main content area
+Layout should be optimized for mobile-first (stacked layout, full-width content on small screens)
+
+🟦 Prompt 2: Homepage - Weekly Task Overview
+Create the Dashboard (Homepage) section.
+I want a panel that shows:
+All tasks for the current week across all projects
+Each task should display: Task name, status (Complete, In Progress, Delayed), and project name
+Also add cards or a small chart per project showing progress: green = complete, yellow = ongoing, red = delayed
+Use dummy task data for now. Style with Tailwind.
+
+✅ PHASE 2: Planner Logic + Week Auto-Generation
+🟦 Prompt 3: Planner Form UI
+Now create a Planner page with a form to add a new project.
+The form should include:
+
+Project Title
+Description
+Start Date
+End Date
+After submitting, auto-generate weekly containers based on the project duration. For example, a 3-week project (June 20–July 14) should display:
+Week 1 (June 20–June 26)
+Week 2 (June 27–July 3)
+Week 3 (July 4–July 10)
+You can calculate weeks using JavaScript. No need to store yet — just render in the browser.
+
+🟦 Prompt 4: Weekly Tasks + Add Task Modal
+Inside each Week container, allow the user to:
+Click "Add Task"
+Fill a modal with: Task title, status (Complete, In Progress, Delayed), and due date
+Show the task under the appropriate week in a styled list
+Add colored tags or icons to represent task status
+
+✅ PHASE 3: To-Do + Data Storage
+🟦 Prompt 5: To Do Page for This Week
+Build a To Do page that displays all tasks for the current week only (across all projects).
+This should be a clean checklist view:
+Task title
+Week number + Project name
+Status toggle (e.g. mark complete)
+Use JS logic to filter tasks whose dueDate is within the current week range.
+
+🟦 Prompt 6: localStorage Task Storage Utility
+Create a storage.js utility that:
+Saves all tasks and projects into localStorage
+Loads them on page reload
+Allows updates (e.g. mark task complete)
+Organizes tasks like:
+
+[
+  {
+    projectId: "abc123",
+    title: "Build homepage",
+    description: "...",
+    startDate: "...",
+    endDate: "...",
+    weeks: [
+      {
+        weekLabel: "Week 1",
+        start: "...",
+        end: "...",
+        tasks: [
+          {
+            title: "Wireframe UI",
+            status: "Complete",
+            dueDate: "..."
+          }
+        ]
+      }
+    ]
+  }
+]
+
+✅ PHASE 4: Visual Analytics + Polish
+🟦 Prompt 7: Project Progress Indicators
+For each project card on the dashboard or planner page:
+Show a mini pie chart or progress bar based on number of tasks that are Complete, In Progress, or Delayed
+Use Chart.js or a lightweight Tailwind-based progress bar
+Colors: green = complete, yellow = ongoing, red = delayed
+
+🟦 Prompt 8: Final Polish + Responsive Testing
+Help me polish the overall site:
+Ensure the navbar collapses well on mobile
+Make modals full-screen on small devices
+Add subtle shadows and spacing to make the interface feel clean and executive-level
+Ensure everything works with localStorage and renders correctly on page reload

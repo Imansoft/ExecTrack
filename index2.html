@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOMO Executive Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-white shadow px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <div class="flex items-center space-x-3">
+      <img src="../assets/logo.png" alt="Logo" class="h-8 w-8 hidden sm:block" onerror="this.style.display='none'">
+      <span class="font-bold text-xl text-gray-800">MOMO Dashboard</span>
+    </div>
+    <div class="space-x-4 hidden md:flex">
+      <a href="#" class="text-gray-600 hover:text-blue-600 font-medium">Dashboard</a>
+      <a href="#" class="text-gray-600 hover:text-blue-600 font-medium">Planner</a>
+      <a href="#" class="text-gray-600 hover:text-blue-600 font-medium">Analytics</a>
+    </div>
+    <!-- Mobile menu button -->
+    <button class="md:hidden flex items-center" id="mobile-menu-btn">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+  </nav>
+
+  <div class="flex">
+    <!-- Sidebar (desktop only) -->
+    <aside class="hidden md:block w-64 bg-white shadow h-screen sticky top-16 p-6">
+      <nav class="flex flex-col space-y-4">
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">🏠 Dashboard</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">🗂️ Planner</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">📊 Analytics</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8">
+      <!-- Summary Cards -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+          <span class="text-green-500 text-2xl">✅</span>
+          <span class="text-lg font-semibold mt-2">Completed</span>
+          <span class="text-2xl font-bold" id="completed-count">0</span>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+          <span class="text-yellow-500 text-2xl">🔄</span>
+          <span class="text-lg font-semibold mt-2">In Progress</span>
+          <span class="text-2xl font-bold" id="inprogress-count">0</span>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+          <span class="text-blue-400 text-2xl">⏸</span>
+          <span class="text-lg font-semibold mt-2">On Hold</span>
+          <span class="text-2xl font-bold" id="onhold-count">0</span>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+          <span class="text-red-500 text-2xl">🔴</span>
+          <span class="text-lg font-semibold mt-2">Overdue</span>
+          <span class="text-2xl font-bold" id="overdue-count">0</span>
+        </div>
+      </section>
+
+      <!-- Charts Dashboard -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-4">
+          <h3 class="font-semibold mb-2">Task Status Split</h3>
+          <canvas id="statusPieChart" height="200"></canvas>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <h3 class="font-semibold mb-2">Tasks per Week (This Month)</h3>
+          <canvas id="tasksBarChart" height="200"></canvas>
+        </div>
+      </section>
+
+      <!-- Project Planning Section -->
+      <section>
+        <h2 class="text-xl font-bold mb-4">Project Planning</h2>
+        <button class="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="openAddTaskModal()">+ Add Task</button>
+        <!-- Planner Accordion: Month > Week > Tasks -->
+        <div class="bg-white rounded-lg shadow p-4">
+          <!-- Accordion by Month -->
+          <div class="space-y-4" id="planner-accordion">
+            <!-- Example Month: June -->
+            <div class="border rounded">
+              <button type="button" class="w-full flex justify-between items-center px-4 py-3 text-left font-semibold text-gray-700 focus:outline-none focus:bg-gray-100" onclick="document.getElementById('month-june').classList.toggle('hidden')">
+                <span>June 2025</span>
+                <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="month-june" class="hidden px-2 pb-3">
+                <!-- Weeks -->
+                <div class="space-y-2">
+                  <!-- Repeat for Week 1 to 5 -->
+                  <div class="border rounded">
+                    <button type="button" class="w-full flex justify-between items-center px-3 py-2 text-left text-gray-600 font-medium focus:outline-none focus:bg-gray-50" onclick="document.getElementById('june-week-1').classList.toggle('hidden')">
+                      <span>Week 1</span>
+                      <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="june-week-1" class="hidden px-2 pb-2">
+                      <!-- Task Entries -->
+                      <ul class="divide-y">
+                        <li class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <span class="font-semibold">Prepare Board Report</span>
+                            <span class="ml-2 text-sm text-gray-400">(Due: 2025-06-05)</span>
+                            <span class="ml-2 text-sm text-gray-500">Owner: John</span>
+                          </div>
+                          <span class="inline-block mt-2 sm:mt-0 bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Complete</span>
+                        </li>
+                        <li class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <span class="font-semibold">Kickoff Marketing Plan</span>
+                            <span class="ml-2 text-sm text-gray-400">(Due: 2025-06-07)</span>
+                            <span class="ml-2 text-sm text-gray-500">Owner: Sarah</span>
+                          </div>
+                          <span class="inline-block mt-2 sm:mt-0 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">In Progress</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- Week 2 Example -->
+                  <div class="border rounded">
+                    <button type="button" class="w-full flex justify-between items-center px-3 py-2 text-left text-gray-600 font-medium focus:outline-none focus:bg-gray-50" onclick="document.getElementById('june-week-2').classList.toggle('hidden')">
+                      <span>Week 2</span>
+                      <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="june-week-2" class="hidden px-2 pb-2">
+                      <ul class="divide-y">
+                        <li class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <span class="font-semibold">Review Financials</span>
+                            <span class="ml-2 text-sm text-gray-400">(Due: 2025-06-12)</span>
+                            <span class="ml-2 text-sm text-gray-500">Owner: Alex</span>
+                          </div>
+                          <span class="inline-block mt-2 sm:mt-0 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">On Hold</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- Repeat for Weeks 3-5 as needed -->
+                </div>
+              </div>
+            </div>
+            <!-- Example Month: July (collapsed by default) -->
+            <div class="border rounded">
+              <button type="button" class="w-full flex justify-between items-center px-4 py-3 text-left font-semibold text-gray-700 focus:outline-none focus:bg-gray-100" onclick="document.getElementById('month-july').classList.toggle('hidden')">
+                <span>July 2025</span>
+                <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="month-july" class="hidden px-2 pb-3">
+                <div class="space-y-2">
+                  <!-- Week 1 Example -->
+                  <div class="border rounded">
+                    <button type="button" class="w-full flex justify-between items-center px-3 py-2 text-left text-gray-600 font-medium focus:outline-none focus:bg-gray-50" onclick="document.getElementById('july-week-1').classList.toggle('hidden')">
+                      <span>Week 1</span>
+                      <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="july-week-1" class="hidden px-2 pb-2">
+                      <ul class="divide-y">
+                        <li class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <span class="font-semibold">Strategy Review</span>
+                            <span class="ml-2 text-sm text-gray-400">(Due: 2025-07-03)</span>
+                            <span class="ml-2 text-sm text-gray-500">Owner: John</span>
+                          </div>
+                          <span class="inline-block mt-2 sm:mt-0 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">In Progress</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- Repeat for Weeks 2-5 as needed -->
+                </div>
+              </div>
+            </div>
+            <!-- Add more months as needed -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Add Task Modal -->
+      <div id="add-task-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-30 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+          <h3 class="text-lg font-bold mb-4">Add New Task</h3>
+          <form id="add-task-form" class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Project</label>
+              <input type="text" name="project" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Description</label>
+              <input type="text" name="description" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Week</label>
+              <select name="week" class="w-full border rounded px-3 py-2" required>
+                <option value="1">Week 1</option>
+                <option value="2">Week 2</option>
+                <option value="3">Week 3</option>
+                <option value="4">Week 4</option>
+                <option value="5">Week 5</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Status</label>
+              <select name="status" class="w-full border rounded px-3 py-2" required>
+                <option value="Complete">Complete</option>
+                <option value="In Progress">In Progress</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Owner</label>
+              <input type="text" name="owner" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Due Date</label>
+              <input type="date" name="duedate" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div class="flex justify-end space-x-2 mt-4">
+              <button type="button" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" onclick="closeAddTaskModal()">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add</button>
+            </div>
+          </form>
+          <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="closeAddTaskModal()">✖</button>
+        </div>
+      </div>
+
+      <!-- Edit Task Modal -->
+      <div id="edit-task-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-30 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+          <h3 class="text-lg font-bold mb-4">Edit Task</h3>
+          <form id="edit-task-form" class="space-y-3">
+            <input type="hidden" name="taskid">
+            <div>
+              <label class="block text-sm font-medium mb-1">Project</label>
+              <input type="text" name="project" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Description</label>
+              <input type="text" name="description" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Week</label>
+              <select name="week" class="w-full border rounded px-3 py-2" required>
+                <option value="1">Week 1</option>
+                <option value="2">Week 2</option>
+                <option value="3">Week 3</option>
+                <option value="4">Week 4</option>
+                <option value="5">Week 5</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Status</label>
+              <select name="status" class="w-full border rounded px-3 py-2" required>
+                <option value="Complete">Complete</option>
+                <option value="In Progress">In Progress</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Owner</label>
+              <input type="text" name="owner" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Due Date</label>
+              <input type="date" name="duedate" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div class="flex justify-end space-x-2 mt-4">
+              <button type="button" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" onclick="closeEditTaskModal()">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+            </div>
+          </form>
+          <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="closeEditTaskModal()">✖</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Sidebar Drawer (hidden by default) -->
+  <div id="mobile-sidebar" class="fixed inset-0 bg-black bg-opacity-30 z-20 hidden">
+    <div class="absolute left-0 top-0 w-64 bg-white h-full shadow p-6">
+      <button id="close-mobile-sidebar" class="mb-6 text-gray-500 hover:text-red-500">Close ✖</button>
+      <nav class="flex flex-col space-y-4">
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">🏠 Dashboard</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">🗂️ Planner</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-semibold">📊 Analytics</a>
+      </nav>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // --- SheetDB API Integration ---
+    const SHEETDB_API_URL = "https://sheetdb.io/api/v1/str9so7xsrcgs"; // Replace with your SheetDB API URL
+
+    // Loading/Error State
+    function setLoading(state) {
+      const planner = document.getElementById('planner-accordion');
+      if (state) {
+        planner.innerHTML = '<div class="py-8 text-center text-blue-500">Loading...</div>';
+      }
+    }
+    function setError(msg) {
+      const planner = document.getElementById('planner-accordion');
+      planner.innerHTML = `<div class='py-8 text-center text-red-500'>${msg}</div>`;
+    }
+
+    // Fetch tasks from Google Sheets API
+    async function fetchTasksFromAPI() {
+      setLoading(true);
+      try {
+        const res = await fetch(`${SHEETDB_API_URL}`);
+        const data = await res.json();
+        localStorage.setItem('momo_tasks', JSON.stringify(data));
+        renderPlanner();
+      } catch (err) {
+        setError('Failed to load tasks from Google Sheets API.');
+      }
+    }
+
+    // Add a new task to API
+    async function addTaskToAPI(task) {
+      setLoading(true);
+      try {
+        await fetch(`${SHEETDB_API_URL}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [task] })
+        });
+        await fetchTasksFromAPI();
+      } catch (err) {
+        setError('Failed to add task.');
+      }
+    }
+
+    // Update a task by ID
+    async function updateTaskInAPI(taskId, updatedFields) {
+      setLoading(true);
+      try {
+        await fetch(`${SHEETDB_API_URL}/Task%20ID/${taskId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [updatedFields] })
+        });
+        await fetchTasksFromAPI();
+      } catch (err) {
+        setError('Failed to update task.');
+      }
+    }
+
+    // Delete a task by ID
+    async function deleteTaskInAPI(taskId) {
+      setLoading(true);
+      try {
+        await fetch(`${SHEETDB_API_URL}/Task%20ID/${taskId}`, {
+          method: "DELETE" });
+        await fetchTasksFromAPI();
+      } catch (err) {
+        setError('Failed to delete task.');
+      }
+    }
+
+    // Mobile sidebar toggle logic
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const closeMobileSidebar = document.getElementById('close-mobile-sidebar');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileSidebar.classList.remove('hidden');
+    });
+    closeMobileSidebar.addEventListener('click', () => {
+      mobileSidebar.classList.add('hidden');
+    });
+
+    // Modal logic
+    function openAddTaskModal() {
+      document.getElementById('add-task-modal').classList.remove('hidden');
+    }
+    function closeAddTaskModal() {
+      document.getElementById('add-task-modal').classList.add('hidden');
+      document.getElementById('add-task-form').reset();
+    }
+    function openEditTaskModal(task) {
+      // Populate form fields with task data (to be implemented with real data)
+      document.getElementById('edit-task-modal').classList.remove('hidden');
+    }
+    function closeEditTaskModal() {
+      document.getElementById('edit-task-modal').classList.add('hidden');
+      document.getElementById('edit-task-form').reset();
+    }
+
+    // Task Management Logic
+    const TASKS_KEY = 'momo_tasks';
+    function getTasks() {
+      return JSON.parse(localStorage.getItem(TASKS_KEY) || '[]');
+    }
+    function saveTasks(tasks) {
+      localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    }
+
+    // Render Planner Accordion
+    function renderPlanner() {
+      const tasks = getTasks();
+      const months = {};
+      tasks.forEach(task => {
+        if (!months[task.month]) months[task.month] = {};
+        if (!months[task.month][task.week]) months[task.month][task.week] = [];
+        months[task.month][task.week].push(task);
+      });
+      const planner = document.getElementById('planner-accordion');
+      planner.innerHTML = '';
+      Object.keys(months).forEach(month => {
+        const monthId = `month-${month.toLowerCase()}`;
+        let monthHtml = `
+          <div class="border rounded mb-2">
+            <button type="button" class="w-full flex justify-between items-center px-4 py-3 text-left font-semibold text-gray-700 focus:outline-none focus:bg-gray-100" onclick="document.getElementById('${monthId}').classList.toggle('hidden')">
+              <span>${month}</span>
+              <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/></svg>
+            </button>
+            <div id='${monthId}' class='hidden px-2 pb-3'>
+              <div class='space-y-2'>
+        `;
+        for (let week = 1; week <= 5; week++) {
+          const weekId = `${month.toLowerCase()}-week-${week}`;
+          const weekTasks = months[month][week] || [];
+          monthHtml += `
+            <div class='border rounded mb-1'>
+              <button type='button' class='w-full flex justify-between items-center px-3 py-2 text-left text-gray-600 font-medium focus:outline-none focus:bg-gray-50' onclick="document.getElementById('${weekId}').classList.toggle('hidden')">
+                <span>Week ${week}</span>
+                <svg class='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/></svg>
+              </button>
+              <div id='${weekId}' class='hidden px-2 pb-2'>
+                <ul class='divide-y'>
+          `;
+          if (weekTasks.length === 0) {
+            monthHtml += `<li class='py-2 text-gray-400'>No tasks</li>`;
+          } else {
+            weekTasks.forEach(task => {
+              monthHtml += `
+                <li class='py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between'>
+                  <div>
+                    <span class='font-semibold'>${task.description}</span>
+                    <span class='ml-2 text-sm text-gray-400'>(Due: ${task.duedate})</span>
+                    <span class='ml-2 text-sm text-gray-500'>Owner: ${task.owner}</span>
+                  </div>
+                  <select class='mt-2 sm:mt-0 bg-gray-100 border text-xs px-2 py-1 rounded' onchange='updateTaskStatus("${task.id}", this.value)'>
+                    <option value='Complete' ${task.status === 'Complete' ? 'selected' : ''}>Complete</option>
+                    <option value='In Progress' ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value='On Hold' ${task.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
+                  </select>
+                </li>
+              `;
+            });
+          }
+          monthHtml += `</ul></div></div>`;
+        }
+        monthHtml += `</div></div></div>`;
+        planner.innerHTML += monthHtml;
+      });
+    }
+
+    // Add Task
+    document.getElementById('add-task-form').onsubmit = async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const newTask = {
+        id: 'task-' + Date.now(),
+        project: form.project.value,
+        description: form.description.value,
+        month: getMonthFromDate(form.duedate.value),
+        week: parseInt(form.week.value),
+        status: form.status.value,
+        owner: form.owner.value,
+        duedate: form.duedate.value
+      };
+      // Save to SheetDB
+      await addTaskToAPI(newTask);
+      closeAddTaskModal();
+      renderPlanner();
+    };
+
+    // Update Task Status
+    function updateTaskStatus(taskId, newStatus) {
+      const tasks = getTasks();
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx !== -1) {
+        tasks[idx].status = newStatus;
+        saveTasks(tasks);
+        renderPlanner();
+      }
+    }
+
+    // Helper: Get Month Name from Date
+    function getMonthFromDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleString('default', { month: 'long', year: 'numeric' });
+    }
+
+    // Chart.js Dashboard Logic
+    let statusPieChart, tasksBarChart;
+    function renderCharts() {
+      const tasks = getTasks();
+      // Pie Chart Data
+      const statusCounts = { 'Complete': 0, 'In Progress': 0, 'On Hold': 0 };
+      tasks.forEach(t => {
+        if (statusCounts[t.status] !== undefined) statusCounts[t.status]++;
+      });
+      const pieData = {
+        labels: ['Complete', 'In Progress', 'On Hold'],
+        datasets: [{
+          data: [statusCounts['Complete'], statusCounts['In Progress'], statusCounts['On Hold']],
+          backgroundColor: ['#34d399', '#fbbf24', '#60a5fa'],
+        }]
+      };
+      // Bar Chart Data (for current month)
+      const now = new Date();
+      const monthStr = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const weekCounts = [0, 0, 0, 0, 0];
+      tasks.filter(t => t.month === monthStr).forEach(t => {
+        if (t.week >= 1 && t.week <= 5) weekCounts[t.week - 1]++;
+      });
+      const barData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+        datasets: [{
+          label: 'Tasks',
+          data: weekCounts,
+          backgroundColor: '#3b82f6',
+        }]
+      };
+      // Render Pie Chart
+      const pieCtx = document.getElementById('statusPieChart').getContext('2d');
+      if (statusPieChart) statusPieChart.destroy();
+      statusPieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: pieData,
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+      // Render Bar Chart
+      const barCtx = document.getElementById('tasksBarChart').getContext('2d');
+      if (tasksBarChart) tasksBarChart.destroy();
+      tasksBarChart = new Chart(barCtx, {
+        type: 'bar',
+        data: barData,
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    // Update charts and summary cards after rendering planner
+    function renderPlanner() {
+      const tasks = getTasks();
+      const completedCount = tasks.filter(t => t.status === 'Complete').length;
+      const inProgressCount = tasks.filter(t => t.status === 'In Progress').length;
+      const onHoldCount = tasks.filter(t => t.status === 'On Hold').length;
+      const overdueCount = tasks.filter(t => new Date(t.duedate) < new Date() && t.status !== 'Complete').length;
+      document.getElementById('completed-count').innerText = completedCount;
+      document.getElementById('inprogress-count').innerText = inProgressCount;
+      document.getElementById('onhold-count').innerText = onHoldCount;
+      document.getElementById('overdue-count').innerText = overdueCount;
+      renderCharts();
+    }
+
+    // On page load, fetch tasks from API
+    window.addEventListener('DOMContentLoaded', fetchTasksFromAPI);
+
+    // Initial Render
+    renderPlanner();
+  </script>
+</body>
+</html>

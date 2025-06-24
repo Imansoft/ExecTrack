@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExecTrack Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center">
+      <span class="font-bold text-xl text-blue-600">ExecTrack</span>
+    </div>
+    <button class="md:hidden block text-gray-700 focus:outline-none" id="menu-toggle">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+    <div class="hidden md:flex space-x-6" id="navbar-links">
+      <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+      <a href="planner.html" class="text-gray-700 hover:text-blue-600 font-medium">Planner</a>
+      <a href="todo.html" class="text-gray-700 hover:text-blue-600 font-medium">To Do</a>
+    </div>
+  </nav>
+  <!-- Mobile Nav Links -->
+  <div class="md:hidden" id="mobile-menu" style="display:none;">
+    <a href="index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Dashboard</a>
+    <a href="planner.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Planner</a>
+    <a href="todo.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">To Do</a>
+  </div>
+  <!-- Main Content -->
+  <main class="flex-1 p-4 w-full max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Welcome to ExecTrack</h1>
+    <p class="text-gray-600 mb-6">Your executive productivity dashboard. Use the navigation above to get started.</p>
+    <!-- Dashboard Panel: Tasks This Week -->
+    <section class="mb-8">
+      <h2 class="text-lg font-semibold mb-2 text-blue-700">My Tasks This Week</h2>
+      <div id="tasks-list" class="space-y-3">
+        <!-- Tasks will be rendered here -->
+      </div>
+    </section>
+    <!-- Project Progress Cards -->
+    <section>
+      <h2 class="text-lg font-semibold mb-2 text-blue-700">Project Progress</h2>
+      <div id="project-cards" class="grid grid-cols-1 gap-4">
+        <!-- Project cards will be rendered here -->
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    import { loadProjects } from './storage.js';
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuToggle.addEventListener('click', () => {
+      if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+        mobileMenu.style.display = 'block';
+      } else {
+        mobileMenu.style.display = 'none';
+      }
+    });
+    // Load projects from storage
+    const projects = loadProjects();
+    // Get current date
+    const today = new Date();
+    // Helper: is date in week range
+    function isInWeek(week, date) {
+      return date >= new Date(week.start) && date <= new Date(week.end);
+    }
+    // Gather all tasks for the current week
+    let allTasks = [];
+    projects.forEach(project => {
+      project.weeks.forEach(week => {
+        if (isInWeek(week, today)) {
+          week.tasks.forEach(task => {
+            allTasks.push({
+              ...task,
+              project: project.title
+            });
+          });
+        }
+      });
+    });
+    // Status color map
+    const statusColor = {
+      'Complete': 'bg-green-100 text-green-700',
+      'In Progress': 'bg-yellow-100 text-yellow-700',
+      'Delayed': 'bg-red-100 text-red-700'
+    };
+    // Render tasks
+    const tasksList = document.getElementById('tasks-list');
+    tasksList.innerHTML = allTasks.length ? allTasks.map(task => `
+      <div class="flex items-center justify-between bg-white rounded shadow p-3">
+        <div>
+          <div class="font-medium text-gray-800">${task.title}</div>
+          <div class="text-xs text-gray-500">${task.project}</div>
+        </div>
+        <span class="px-2 py-1 rounded text-xs font-semibold ${statusColor[task.status]}">${task.status}</span>
+      </div>
+    `).join('') : '<div class="text-gray-500 text-center">No tasks for this week.</div>';
+    // Render project progress cards
+    const projectCards = document.getElementById('project-cards');
+    projectCards.innerHTML = projects.map((project, idx) => {
+      let total = 0, completed = 0, ongoing = 0, delayed = 0;
+      project.weeks.forEach(week => {
+        week.tasks.forEach(task => {
+          total++;
+          if (task.status === 'Complete') completed++;
+          else if (task.status === 'In Progress') ongoing++;
+          else if (task.status === 'Delayed') delayed++;
+        });
+      });
+      const percentComplete = total ? (completed/total)*100 : 0;
+      const percentOngoing = total ? (ongoing/total)*100 : 0;
+      const percentDelayed = total ? (delayed/total)*100 : 0;
+      return `
+        <div class="bg-white rounded shadow p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-gray-800">${project.title}</span>
+            <span class="text-xs text-gray-500">${completed}/${total} done</span>
+          </div>
+          <canvas id="progressChart${idx}" width="120" height="60"></canvas>
+          <div class="w-full bg-gray-200 rounded h-3 mb-2 flex">
+            <div class="h-3 rounded-l bg-green-400" style="width:${percentComplete}%"></div>
+            <div class="h-3 bg-yellow-400" style="width:${percentOngoing}%"></div>
+            <div class="h-3 rounded-r bg-red-400" style="width:${percentDelayed}%"></div>
+          </div>
+          <div class="flex text-xs justify-between">
+            <span class="text-green-600">✔ ${completed} Complete</span>
+            <span class="text-yellow-600">● ${ongoing} Ongoing</span>
+            <span class="text-red-600">✖ ${delayed} Delayed</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+    // Render Chart.js semi-pie for each project
+    projects.forEach((project, idx) => {
+      let total = 0, completed = 0, ongoing = 0, delayed = 0;
+      project.weeks.forEach(week => {
+        week.tasks.forEach(task => {
+          total++;
+          if (task.status === 'Complete') completed++;
+          else if (task.status === 'In Progress') ongoing++;
+          else if (task.status === 'Delayed') delayed++;
+        });
+      });
+      const ctx = document.getElementById(`progressChart${idx}`);
+      if (ctx) {
+        new window.Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Complete', 'Ongoing', 'Delayed'],
+            datasets: [{
+              data: [completed, ongoing, delayed],
+              backgroundColor: ['#22c55e', '#eab308', '#ef4444'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            cutout: '70%',
+            rotation: -90,
+            circumference: 180,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
