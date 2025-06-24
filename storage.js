@@ -56,3 +56,40 @@ export function updateTaskStatus(projectId, weekLabel, taskTitle, newStatus) {
     }
   }
 }
+
+export function deleteTaskFromWeek(projectId, weekLabel, taskTitle) {
+  const projects = loadProjects();
+  const project = projects.find(p => p.projectId === projectId);
+  if (project) {
+    const week = project.weeks.find(w => w.weekLabel === weekLabel);
+    if (week) {
+      week.tasks = week.tasks.filter(t => t.title !== taskTitle);
+      saveProjects(projects);
+    }
+  }
+}
+
+export function autoUpdateTaskStatuses(todayStr) {
+  const projects = loadProjects();
+  let changed = false;
+  projects.forEach(project => {
+    project.weeks.forEach(week => {
+      week.tasks.forEach(task => {
+        if (task.status !== 'Complete') {
+          if (task.dueDate && new Date(task.dueDate) < new Date(todayStr)) {
+            if (task.status !== 'Delayed') {
+              task.status = 'Delayed';
+              changed = true;
+            }
+          } else {
+            if (task.status !== 'In Progress') {
+              task.status = 'In Progress';
+              changed = true;
+            }
+          }
+        }
+      });
+    });
+  });
+  if (changed) saveProjects(projects);
+}

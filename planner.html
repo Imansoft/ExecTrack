@@ -8,12 +8,17 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
   <!-- Navbar -->
-  <nav class="bg-white shadow-md px-4 py-3 flex items-center justify-between">
+  <nav class="bg-white shadow-lg px-4 py-3 flex items-center justify-between">
     <div class="flex items-center">
       <span class="font-bold text-xl text-blue-600">ExecTrack</span>
     </div>
-    <button class="md:hidden block text-gray-700 focus:outline-none" id="menu-toggle">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    <button class="md:hidden block text-gray-700 focus:outline-none transition-transform duration-200" id="menu-toggle" aria-label="Open menu">
+      <svg id="hamburger-icon" class="w-7 h-7 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+      <svg id="close-icon" class="w-7 h-7 transition-transform duration-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
     </button>
     <div class="hidden md:flex space-x-6" id="navbar-links">
       <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
@@ -22,25 +27,32 @@
     </div>
   </nav>
   <!-- Mobile Nav Links -->
-  <div class="md:hidden" id="mobile-menu" style="display:none;">
-    <a href="index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Dashboard</a>
-    <a href="planner.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Planner</a>
-    <a href="todo.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">To Do</a>
+  <div class="md:hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 z-40 transition-opacity duration-200" id="mobile-menu-overlay" style="display:none;"></div>
+  <div class="md:hidden fixed top-0 right-0 w-3/4 max-w-xs h-full bg-white shadow-2xl z-50 transition-transform duration-200 transform translate-x-full" id="mobile-menu-panel">
+    <div class="flex flex-col h-full p-6 space-y-4">
+      <a href="index.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">Dashboard</a>
+      <a href="planner.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">Planner</a>
+      <a href="todo.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">To Do</a>
+      <div class="flex-1"></div>
+      <button id="close-menu-btn" class="mt-auto text-gray-400 hover:text-gray-700 text-2xl self-end">&times;</button>
+    </div>
   </div>
   <!-- Main Content -->
-  <main class="flex-1 p-4 w-full max-w-lg mx-auto">
-    <h1 class="text-2xl font-bold mb-4 text-gray-800">Initiative/Project Planner</h1>
-    <form id="project-form" class="bg-white rounded shadow p-4 space-y-4 mb-8">
-      <div>
-        <label class="block text-gray-700 font-medium mb-1">Project Title</label>
-        <input type="text" id="title" required class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200">
-      </div>
-      <div>
-        <label class="block text-gray-700 font-medium mb-1">Description</label>
-        <textarea id="description" rows="2" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
-      </div>
-      <div class="flex space-x-2">
+  <main class="flex-1 p-4 w-full max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+    <h1 class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">Project Planner</h1>
+    <form id="project-form" class="bg-white rounded shadow-lg p-4 space-y-4 mb-8">
+      <div class="md:flex md:space-x-4">
+        <div class="flex-1 mb-4 md:mb-0">
+          <label class="block text-gray-700 font-medium mb-1">Project Title</label>
+          <input type="text" id="title" required class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200">
+        </div>
         <div class="flex-1">
+          <label class="block text-gray-700 font-medium mb-1">Description</label>
+          <textarea id="description" rows="2" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
+        </div>
+      </div>
+      <div class="flex flex-col md:flex-row md:space-x-2">
+        <div class="flex-1 mb-2 md:mb-0">
           <label class="block text-gray-700 font-medium mb-1">Start Date</label>
           <input type="date" id="start" required class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200">
         </div>
@@ -53,8 +65,9 @@
     </form>
     <div id="weeks-container"></div>
     <!-- Modal -->
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-      <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden md:items-center md:justify-center">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6 relative md:max-w-md md:w-auto md:mx-auto md:my-0 md:rounded-lg md:p-8 md:shadow-2xl md:relative md:top-auto md:left-auto md:transform-none md:h-auto md:flex md:flex-col md:justify-center md:items-center
+      sm:rounded-none sm:w-full sm:h-full sm:max-w-full sm:p-4 sm:top-0 sm:left-0 sm:transform-none">
         <button id="close-modal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">&times;</button>
         <h3 class="text-lg font-semibold mb-4">Add Task</h3>
         <form id="task-form" class="space-y-4">
@@ -80,17 +93,36 @@
     </div>
   </main>
   <script type="module">
-    import { loadProjects, addProject, updateProject, saveProjects } from './storage.js';
-    // Mobile menu toggle
+    import { loadProjects, addProject, updateProject, saveProjects, deleteTaskFromWeek, autoUpdateTaskStatuses } from './storage.js';
+    // Hamburger menu improved logic
     const menuToggle = document.getElementById('menu-toggle');
-    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const closeMenuBtn = document.getElementById('close-menu-btn');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const closeIcon = document.getElementById('close-icon');
+    function openMenu() {
+      mobileMenuPanel.style.transform = 'translateX(0)';
+      mobileMenuOverlay.style.display = 'block';
+      hamburgerIcon.classList.add('hidden');
+      closeIcon.classList.remove('hidden');
+    }
+    function closeMenu() {
+      mobileMenuPanel.style.transform = 'translateX(100%)';
+      mobileMenuOverlay.style.display = 'none';
+      hamburgerIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
+    }
     menuToggle.addEventListener('click', () => {
-      if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
-        mobileMenu.style.display = 'block';
+      if (mobileMenuPanel.style.transform === 'translateX(0px)') {
+        closeMenu();
       } else {
-        mobileMenu.style.display = 'none';
+        openMenu();
       }
     });
+    closeMenuBtn.addEventListener('click', closeMenu);
+    mobileMenuOverlay.addEventListener('click', closeMenu);
+
     // Modal logic
     const modal = document.getElementById('task-modal');
     const closeModal = document.getElementById('close-modal');
@@ -159,7 +191,7 @@
                   <span class="text-gray-500 text-xs">(${new Date(w.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${new Date(w.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})</span>
                 </div>
                 <ul class="space-y-2" id="tasks-week-${project.projectId}-${idx}">
-                  ${w.tasks.map(task => renderTask(task)).join('')}
+                  ${w.tasks.map(task => renderTask(task, project.projectId, w.weekLabel)).join('')}
                 </ul>
               </li>
             `).join('')}
@@ -185,10 +217,45 @@
           }
         };
       });
+      // Add event listeners for task delete and mark complete
+      setTimeout(() => {
+        document.querySelectorAll('.task-delete-btn').forEach(btn => {
+          btn.onclick = function() {
+            const projId = btn.getAttribute('data-proj');
+            const weekLabel = btn.getAttribute('data-week');
+            const taskTitle = btn.getAttribute('data-task');
+            if (confirm('Delete this task?')) {
+              deleteTaskFromWeek(projId, weekLabel, taskTitle);
+              projects = loadProjects();
+              renderAllProjects();
+            }
+          };
+        });
+        document.querySelectorAll('.mark-complete-btn').forEach(btn => {
+          btn.onclick = function() {
+            const projId = btn.getAttribute('data-proj');
+            const weekLabel = btn.getAttribute('data-week');
+            const taskTitle = btn.getAttribute('data-task');
+            const project = projects.find(p => p.projectId === projId);
+            if (project) {
+              const week = project.weeks.find(w => w.weekLabel === weekLabel);
+              if (week) {
+                const task = week.tasks.find(t => t.title === taskTitle);
+                if (task) {
+                  task.status = 'Complete';
+                  updateProject(project);
+                  projects = loadProjects();
+                  renderAllProjects();
+                }
+              }
+            }
+          };
+        });
+      }, 0);
     }
 
     // Render a single task
-    function renderTask(task) {
+    function renderTask(task, projectId, weekLabel) {
       const statusTag = {
         'Complete': 'bg-green-100 text-green-700',
         'In Progress': 'bg-yellow-100 text-yellow-700',
@@ -201,10 +268,14 @@
       };
       return `
         <li class="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
-          <div>
+          <div class="flex items-center gap-2">
+            <button class="text-red-500 font-bold text-lg mr-2 task-delete-btn" title="Delete Task" data-proj="${projectId}" data-week="${weekLabel}" data-task="${task.title}">-</button>
             <span class="font-medium text-gray-800">${task.title}</span>
             <span class="ml-2 px-2 py-0.5 rounded text-xs font-semibold ${statusTag[task.status]}">${statusIcon[task.status]} ${task.status}</span>
             <span class="block text-xs text-gray-500">Due: ${task.dueDate}</span>
+          </div>
+          <div>
+            ${task.status !== 'Complete' ? `<button class="bg-green-500 text-white px-2 py-1 rounded text-xs mark-complete-btn" data-proj="${projectId}" data-week="${weekLabel}" data-task="${task.title}">Mark Complete</button>` : ''}
           </div>
         </li>
       `;
@@ -274,6 +345,11 @@
       }
       modal.classList.add('hidden');
     });
+
+    // On page load, auto-update task statuses
+    const todayStr = new Date().toISOString().split('T')[0];
+    autoUpdateTaskStatuses(todayStr);
+    projects = loadProjects();
 
     // Initial render
     renderAllProjects();
