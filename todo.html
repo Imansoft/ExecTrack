@@ -5,25 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ExecTrack To Do</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
   <!-- Navbar -->
   <nav class="bg-white shadow-lg px-4 py-3 flex items-center justify-between">
     <div class="flex items-center">
-      <span class="font-bold text-xl text-blue-600">ExecTrack</span>
+      <img src="assets/icon - Copy.png" alt="ExecTrack Logo" class="h-8 w-8 mr-2 inline-block align-middle" style="display:inline;vertical-align:middle;" />
+      <span class="font-bold text-xl text-blue-600 align-middle" style="display:inline;vertical-align:middle;">ExecTrack</span>
     </div>
     <button class="md:hidden block text-gray-700 focus:outline-none transition-transform duration-200" id="menu-toggle" aria-label="Open menu">
-      <svg id="hamburger-icon" class="w-7 h-7 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg id="hamburger-icon" class="w-7 h-7 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>
-      <svg id="close-icon" class="w-7 h-7 transition-transform duration-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg id="close-icon" class="w-7 h-7 transition-transform duration-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
     <div class="hidden md:flex space-x-6" id="navbar-links">
-      <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
-      <a href="planner.html" class="text-gray-700 hover:text-blue-600 font-medium">Planner</a>
-      <a href="todo.html" class="text-gray-700 hover:text-blue-600 font-medium">To Do</a>
+      <a href="index.html" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+      <a href="planner.html" class="text-gray-700 hover:text-blue-600">Planner</a>
+      <a href="todo.html" class="text-blue-700 font-semibold">To Do</a>
+      <a href="Tracker.html" class="text-gray-700 hover:text-blue-600">Tracker Links</a>
     </div>
   </nav>
   <!-- Mobile Nav Links -->
@@ -32,7 +36,8 @@
     <div class="flex flex-col h-full p-6 space-y-4">
       <a href="index.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">Dashboard</a>
       <a href="planner.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">Planner</a>
-      <a href="todo.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">To Do</a>
+      <a href="todo.html" class="block text-lg text-blue-700 font-semibold">To Do</a>
+      <a href="Tracker.html" class="block text-lg text-gray-700 hover:text-blue-600 font-semibold">Tracker Links</a>
       <div class="flex-1"></div>
       <button id="close-menu-btn" class="mt-auto text-gray-400 hover:text-gray-700 text-2xl self-end">&times;</button>
     </div>
@@ -63,28 +68,56 @@
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
-    menuToggle.addEventListener('click', () => {
-      if (mobileMenuPanel.style.transform === 'translateX(0px)') {
-        closeMenu();
-      } else {
-        openMenu();
-      }
-    });
-    closeMenuBtn.addEventListener('click', closeMenu);
-    mobileMenuOverlay.addEventListener('click', closeMenu);
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        if (mobileMenuPanel.style.transform === 'translateX(0px)') {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+    }
+    if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
+    if (mobileMenuOverlay) mobileMenuOverlay.addEventListener('click', closeMenu);
     // Load projects from storage
     const projects = loadProjects();
     // Get current date
     const today = new Date();
-    // Helper: is date in week range
+    // Helper: is date in week range (date-only, ignore time)
     function isInWeek(week, date) {
-      return date >= new Date(week.start) && date <= new Date(week.end);
+      const start = new Date(week.start);
+      const end = new Date(week.end);
+      // Zero out time for comparison
+      start.setHours(0,0,0,0);
+      end.setHours(23,59,59,999);
+      const d = new Date(date);
+      d.setHours(0,0,0,0);
+      return d >= start && d <= end;
     }
-    // Gather all tasks for the current week
+    // Get start/end of current week (Monday-Sunday)
+    function getCurrentWeekRange() {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day; // Sunday=0
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      monday.setHours(0,0,0,0);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23,59,59,999);
+      return { start: monday, end: sunday };
+    }
+    const weekRange = getCurrentWeekRange();
+    // Gather all tasks for the current week across all projects
     let currentWeekTasks = [];
     projects.forEach(project => {
       project.weeks.forEach(week => {
-        if (isInWeek(week, today)) {
+        // Check if this week overlaps with current week
+        const weekStart = new Date(week.start); weekStart.setHours(0,0,0,0);
+        const weekEnd = new Date(week.end); weekEnd.setHours(23,59,59,999);
+        if (
+          (weekStart <= weekRange.end && weekEnd >= weekRange.start)
+        ) {
           week.tasks.forEach(task => {
             currentWeekTasks.push({
               ...task,
@@ -128,6 +161,13 @@
       });
     }
     renderList();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
   </script>
 </body>
 </html>

@@ -89,3 +89,107 @@ Ensure the navbar collapses well on mobile
 Make modals full-screen on small devices
 Add subtle shadows and spacing to make the interface feel clean and executive-level
 Ensure everything works with localStorage and renders correctly on page reload
+
+
+
+New prompts:
+🎯 Prompt 1: Design Supabase Schema for Tracker Feature
+Help me design the Supabase tables I need for a project dashboard web app called ExecTrack.
+I already have:
+Projects table (project id, title, description, start date, end date)
+Tasks table (task id, project id, week, task title, status, due date)
+Now I want to add Tracker Links.
+I need a new TrackerLinks table to support:
+A link ID (random unique string)
+Link Name (e.g., "CEO View")
+Allowed Projects (array of project IDs or JSONB)
+Permissions (e.g., View Only)
+Created At
+
+Also, advise on any Supabase Row Level Security (RLS) or Policy rules I should enable to prevent external users from writing to this data when they load the public link.
+
+Please give me:
+Table schema (SQL or JSON structure)
+Recommended RLS policies
+Any Supabase index or performance tip for this use case
+
+🎯 Prompt 2: Build Tracker Links Page (Private Internal Page)
+Help me build the frontend UI for my Tracker Links Page for ExecTrack (internal use by executives only).
+Using HTML + TailwindCSS + JavaScript (with Supabase JS SDK):
+
+Features I want:
+A form to create a new tracker link:
+Link Name input field
+Multi-select dropdown to choose allowed projects (pulled live from Supabase Projects table)
+Dropdown for viewing permission (only "View Only" for now)
+Submit button → On submit, save into Supabase TrackerLinks table, auto-generate a unique link id for the link
+
+Also:
+A list view of all existing tracker links from Supabase:
+Show link name, allowed projects, permission type, the generated shareable URL
+Delete button to remove any link
+Copy-to-clipboard button for link URLs
+
+🎯 Prompt 3: Tracker Link Generator Logic (JS Side)
+Help me create the JavaScript logic (using Supabase JS client) for the Tracker Links page on ExecTrack.
+Features needed:
+
+On page load:
+Fetch all projects (to populate project multi-select dropdown)
+Fetch all existing TrackerLinks (to show in list view)
+
+On tracker form submit:
+Generate a random unique link ID (UUID or 8-char random string)
+Save tracker link to Supabase: link id, name, selected project IDs array, and permission level
+
+On delete:
+Call Supabase to delete the selected tracker link row
+
+After any action:
+Refresh the tracker link list UI
+
+🎯 Prompt 4: Build Public Analytics Viewer (Link Destination Page)
+Now help me build the Public Analytics Page (analytics.html) for ExecTrack.
+Behavior:
+This page will be accessed via a URL like:
+https://g2gconsultants.com/trackers/:trackerId
+
+Features:
+On page load:
+Get the trackerId from the URL
+Fetch the tracker link settings from Supabase (allowed projects and permission level)
+Fetch the allowed projects and their tasks from Supabase
+Render project progress summary (completed, ongoing, delayed task count per project)
+Show per-project task breakdown (simple task lists with status badges)
+
+UI Notes:
+Read-only (no editing)
+Header should show something like:
+“CEO View - as of June 25, 2025”
+
+🎯 Prompt 5: Supabase Security (RLS) for Public Links
+Advise me on the best Supabase Row Level Security (RLS) setup for my ExecTrack public analytics links.
+
+Requirements:
+
+External users (visiting via public link) can only read tracker link metadata and allowed project/task data
+
+They cannot modify or delete anything
+
+Prevent them from querying projects/tasks outside what their tracker link allows
+
+Allow my internal app (via service role or logged-in user) to create and manage links
+
+Please help me:
+
+Write Supabase RLS policy examples
+
+Suggest API token/auth setup for public link reading
+
+Suggest how my public analytics.html can fetch allowed projects and tasks securely
+
+🎯 Prompt 6 (Optional): Deploying Tracker Link URLs on Netlify/Vercel
+Finally, give me the correct Netlify (or Vercel) route setup so that URLs like:
+https://exectrack.com/trackers/CEO123abc
+automatically load my analytics.html page and pass the trackerId via query string or JS route parsing.
+

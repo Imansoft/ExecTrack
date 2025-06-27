@@ -1,0 +1,60 @@
+-- Projects Table
+CREATE TABLE IF NOT EXISTS projects (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  description text,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  owner text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Tasks Table
+CREATE TABLE IF NOT EXISTS tasks (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid REFERENCES projects(id) ON DELETE CASCADE,
+  week text,
+  title text NOT NULL,
+  status text CHECK (status IN ('Complete', 'In Progress', 'Delayed')),
+  due_date date NOT NULL,
+  assigned_to text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- TrackerLinks Table
+CREATE TABLE IF NOT EXISTS tracker_links (
+  id text PRIMARY KEY, -- random unique string (e.g. 8-char)
+  name text NOT NULL, -- e.g. 'CEO View'
+  allowed_projects uuid[] NOT NULL, -- array of project IDs
+  permissions text NOT NULL, -- e.g. 'View Only'
+  created_at timestamptz DEFAULT now()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tracker_links_allowed_projects ON tracker_links USING GIN(allowed_projects);
+
+-- RLS Policies
+-- Enable RLS
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tracker_links ENABLE ROW LEVEL SECURITY;
+
+-- Public read-only access for tracker_links and related projects/tasks
+CREATE POLICY "Public read tracker_links" ON tracker_links
+  FOR SELECT USING (true);
+CREATE POLICY "Public read projects" ON projects
+  FOR SELECT USING (true);
+CREATE POLICY "Public read tasks" ON tasks
+  FOR SELECT USING (true);
+
+-- Prevent public insert/update/delete
+REVOKE ALL ON tracker_links FROM anon;
+REVOKE ALL ON projects FROM anon;
+REVOKE ALL ON tasks FROM anon;
+
+-- (Optional) Only allow SELECT on allowed_projects for public analytics
+-- You can further restrict with a function if needed.
+
+-- (Optional) Add a unique index on tracker_links.name if you want unique names
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_tracker_links_name ON tracker_links(name);

@@ -1,160 +1,153 @@
 📘 Project Name: MOMO Executive Task & Project Dashboard
-Project Name: ExecTrack
+Alternate Name: ExecTrack
+
 A mobile-first productivity web app that helps executives plan and track projects on a weekly basis, with a clean dashboard, visual progress indicators, and a focused weekly to-do view.
 
-📱 Pages / Core Sections
+📱 Pages / Core Sections:
+
 1. Dashboard (Homepage)
 Purpose: Show an overview of the current week’s tasks across all projects.
 
 Components:
-✅ “My Tasks This Week” list (pulled from all projects)
-
-🔄 Task list view with checkboxes and status indicators
-
-📈 Small project summary cards or timeline
-
-Project Name
-
-Progress bar or pie chart
-
-Legend (✓ Completed / 🟡 Ongoing / 🔴 Delayed)
+- ✅ “My Tasks This Week” list (pulled from all projects)
+- 🔄 Task list view with checkboxes and status indicators
+- 📈 Small project summary cards or timeline
+  - Project Name
+  - Progress bar or pie chart
+  - Legend (✓ Completed / 🟡 Ongoing / 🔴 Delayed)
 
 2. Planner Page
 Purpose: Create and manage projects, broken down into weeks with assigned tasks.
 
-A. Create Project Form
-Project Title
+Sections:
+A. Create Project Form:
+- Project Title
+- Description
+- Start Date
+- End Date
 
-Description
+JavaScript Logic:
+- On project creation, calculate number of weeks between Start and End.
+- Auto-generate weekly containers:
+  Example:
+    - Week 1 (June 20–June 26)
+    - Week 2 (June 27–July 3)
+    - Week 3 (July 4–July 10)
 
-Start Date
-
-End Date
-
-🧠 JavaScript Logic:
-
-On project creation, calculate number of weeks between Start and End
-
-Auto-generate weekly containers:
-
-e.g. “Week 1 (June 20–June 26)”
-
-“Week 2 (June 27–July 3)”, etc.
-
-B. Project View
+B. Project View:
 Each project expands as a dropdown:
 
-less
-Copy
-Edit
 📁 Project A [▼]
   Description: Lorem ipsum...
-  
+
   📦 Week 1
     [Add Task] → opens modal
     • Task 1: Design Wireframes (🟡 In Progress)
     • Task 2: Finalize Brief (✅ Complete)
-  
+
   📦 Week 2
     [Add Task] ...
+
 Task Fields (via modal):
-Task Title
-
-Owner (optional)
-
-Status: ✅ Complete / 🟡 In Progress / 🔴 Delayed
-
-Due Date (used to flag “Delayed”)
+- Task Title
+- Owner (optional)
+- Status: ✅ Complete / 🟡 In Progress / 🔴 Delayed
+- Due Date (used to flag “Delayed”)
 
 3. To Do Page
 Purpose: Show a clean, noise-free list of all tasks for the current week only.
 
-Pulled from all projects
+Features:
+- Pulled from all projects
+- Simple checklist format
+- Sort/filter by:
+  - Project
+  - Status
+  - Due Date
 
-Simple checklist format
+4. Tracker Links Page (NEW FEATURE)
+Purpose: Allow executives to generate shareable, unique links that external stakeholders (e.g., CEO, CCO) can use to view tailored project progress and analytics.
 
-Sort by:
+Key Features:
+- Form to create new tracker links
+- Fields when creating a link:
+  - Link Name (e.g., "CEO View", "CCO View")
+  - Select which projects the link can view:
+    - Option: "All Projects"
+    - Option: "Specific Projects" (multi-select)
+  - Viewing permissions (e.g., View Only)
 
-Project
+- Generated link example:
+  - `exectracker.com/CEO123abc`
+  - `exectracker.com/CCO567xyz`
 
-Status
+- Trackers list view:
+  - Show list of all generated links with their settings (who it's for, projects selected, permissions)
+  - Option to delete or regenerate link
 
-Due Date
+5. Public Analytics Page (Link Destination Page)
+Purpose: Allow anyone with a tracker link to view pre-filtered project progress.
 
-🔄 Core JS Logics
-✅ 1. Auto-Week Generator
+When someone opens the link:
+- Show read-only project analytics (no edit features)
+- Show selected projects only (per link settings)
+- Components visible:
+  - Project progress summary
+  - Task status breakdown (Complete / Ongoing / Delayed)
+  - Per-project task list or progress bars
+- Friendly header like:
+  - "CEO View - As of [Today’s Date]"
+
+---
+
+🔄 Core JavaScript & Backend Logic:
+
+1. Auto-Week Generator
 Input: Start Date, End Date
-Output: Array of weeks, e.g.:
-
-js
-Copy
-Edit
+Output: Array of weeks:
 [
   { weekLabel: "Week 1", start: "June 20", end: "June 26" },
   { weekLabel: "Week 2", start: "June 27", end: "July 3" },
   ...
 ]
-✅ 2. Weekly Task Aggregator (for Dashboard + To-Do)
-Check current date and match it to week intervals to pull all tasks for that week.
 
-✅ 3. Progress Indicator Logic
-Use a progress bar or pie chart to compute:
+2. Weekly Task Aggregator
+Logic to pull all tasks for the current week from all projects for both Dashboard and To Do views.
 
-% of Complete, Ongoing, and Delayed tasks per project
-
-You can calculate like:
-
-js
-Copy
-Edit
+3. Progress Indicator Logic
+For each project, calculate task completion ratio:
 progress = {
   completed: 5,
   ongoing: 3,
   delayed: 2,
   total: 10
 }
-📁 Suggested Folder Structure
-bash
-Copy
-Edit
-exectrack/
-├── index.html            # Dashboard (Tasks this week)
-├── planner.html          # Project creation + management
-├── todo.html             # Weekly task view
-├── /css/
-│   └── tailwind.css
-├── /js/
-│   ├── main.js
-│   ├── planner.js        # Create project, add weeks/tasks
-│   ├── dashboard.js      # Pull this week's tasks, render stats
-│   └── storage.js        # localStorage or API interactions
-├── /components/
-│   └── taskCard.html
-│   └── projectCard.html
-├── /assets/
-│   └── icons/
-└── /data/
-    └── sample-data.json
-💡 Implementation Plan (Your 2-Day Sprint)
-Day 1
- Build homepage (dashboard)
 
- Implement week-task aggregator logic
+Display this as pie chart or progress bar.
 
- Display “My Tasks This Week” + progress cards
+4. Tracker Link Generator Logic:
+- Each link has a unique ID (can be UUID or random string)
+- When user visits the link, read associated view settings from database (Supabase)
+- Filter project/task data accordingly before rendering the public analytics page.
 
-Day 2
- Build planner page with project form
+---
 
- Add auto-week generation on project creation
+🛠️ Backend Upgrade:
 
- Create project dropdown view with week containers
+We are moving from localStorage to **Supabase** for data persistence.
 
- Task form modal
+Supabase Usage:
+- Projects Table
+- Tasks Table
+- TrackerLinks Table (storing: link ID, link name, project IDs array, permissions)
+- Users Table (optional, for future login features)
 
- Add To Do page view (filtered to current week)
+Supabase Features Used:
+- REST API or client-side JS SDK for data fetch/post
+- Supabase Row-Level Security to protect tracker link data from unauthorized edits
+- Supabase Storage (optional for file uploads later)
 
-🔌 Backend (For Now)
-Start with localStorage:
+---
 
-localStorage.setItem("projects", JSON.stringify([...]))
+📁 Suggested Updated Folder Structure:
+
